@@ -201,20 +201,24 @@ defaultPopupKeyHandler
   -> B.EventM (Bb.Name un) (B.Next (Bb.UIState ust up uw un ue))
 defaultPopupKeyHandler pop st ev =
   case ev of
-    (B.VtyEvent (V.EvKey k ms)) ->
+    (B.VtyEvent ve@(V.EvKey k ms)) ->
       case (k, ms) of
         (K.KEsc, []) ->
           B.continue $ st & Bb.uiPopup .~ case st ^. Bb.uiPopup of
                                          Just (Bb.PopError _ _ (Just prev)) -> Just prev
                                          _ -> Nothing
 
-        _ -> next st
-    _ -> next st
+        _ -> next st ve
+
+    _ -> B.continue st
 
   where
-    next stx =
+    next stx ve =
       case pop of
         Bb.PopUser _ (Just pr) -> (pr ^. Bb.prEventHandler) pop stx ev
+        Bb.PopText _ -> do
+          e <- BbRo.handleReadOnlyEditorEvent ve (st ^. Bb.uiPopText)
+          B.continue $ st & Bb.uiPopText .~ e
         _ -> B.continue stx
 
 
