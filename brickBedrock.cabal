@@ -1,0 +1,89 @@
+cabal-version:       2.2
+name:                brickBedrock
+version:             0.1.5.3
+-- synopsis:
+-- description:
+homepage:            https://github.com/andrevdm/brickBedrock#readme
+license:             NONE
+license-file:        LICENSE
+author:              andrevdm
+maintainer:          info@andrevdm.co.za
+copyright:           2021 Andre Van Der Merwe
+category:            Web
+build-type:          Simple
+extra-source-files:  README.md
+
+library
+  ghc-options:         -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wimplicit-prelude -Wcompat -Wredundant-constraints -Wnoncanonical-monad-instances -Widentities -fhide-source-paths -Wpartial-fields -fhide-source-paths -freverse-errors -fwrite-ide-info
+
+  hs-source-dirs:      src
+  exposed-modules:     BrickBedrock.Core
+                     , BrickBedrock.Defaults
+                     , BrickBedrock.Model
+                     , BrickBedrock.Utils
+                     , BrickBedrock.Formatting
+                     , BrickBedrock.Demo.Demo
+                     , BrickBedrock.Controls.ReadOnlyEdit
+                     , BrickBedrock.Controls.ListGrid
+  other-modules:       Paths_brickBedrock
+  build-depends:       base >= 4.10.1.0 && < 5
+                     , protolude
+                     , aeson
+                     , brick
+                     , bytestring
+                     , containers
+                     , lens
+                     , safe-exceptions
+                     , scientific
+                     , strip-ansi-escape
+                     , stm
+                     , stm-chans
+                     , text
+                     , text-zipper
+                     , time
+                     , unordered-containers
+                     , uuid
+                     , vector
+                     , vty
+  default-language:    Haskell2010
+
+executable brickBedrock-exe
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wimplicit-prelude -Wcompat -Wredundant-constraints -Wnoncanonical-monad-instances -Widentities -fhide-source-paths -Wpartial-fields -fhide-source-paths -freverse-errors -fwrite-ide-info
+  other-modules:       Paths_brickBedrock
+  build-depends:       base
+                     , brickBedrock
+                     , protolude
+                     , brick
+                     , containers
+                     , containers
+                     , lens
+                     , safe-exceptions
+                     , stm
+                     , stm-chans
+                     , text
+                     , time
+                     , unordered-containers
+                     , uuid
+                     , vector
+                     , vty
+  default-language:    Haskell2010
+
+test-suite brickBedrock-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Tests.hs
+  build-depends:       base
+                     , brickBedrock
+                     , protolude
+                     , text
+                     , containers
+                     , hedgehog
+  other-modules:       DemoTests
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wimplicit-prelude -Wcompat -Wredundant-constraints -Wnoncanonical-monad-instances -Widentities -fhide-source-paths -Wpartial-fields -fhide-source-paths -freverse-errors -fwrite-ide-info
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/andrevdm/brickBedrock
