@@ -25,6 +25,7 @@ import qualified Brick.BChan as BCh
 import qualified Brick.Focus as BF
 import qualified Brick.Widgets.Edit as BE
 import qualified Brick.Widgets.List as BL
+import qualified Control.Concurrent.STM.TVar as TV
 import           Control.Lens (at,  (%~), (.~), (?~), (^.))
 import qualified Data.Map.Strict as Map
 import qualified Data.Time as DT
@@ -39,20 +40,33 @@ import qualified BrickBedrock.Model as Bb
 
 runTui :: (Ord un) => Bb.UIOptions ust up uw un ue -> ust -> IO ()
 runTui uio ust = do
-  chan <- BCh.newBChan 5
+  uiChan <- BCh.newBChan 10
   now <- DT.getCurrentTime
   tz <- DT.getCurrentTimeZone
 
+  tickCount <- TV.newTVarIO 0
+  blockingActions <- TV.newTVarIO Map.empty
+  lastBlocking <- TV.newTVarIO True
+
   let
     localTime = DT.utcToLocalTime tz now
+
+    bg =
+      Bb.BgTask
+        { Bb._bgUiChan = uiChan
+        , Bb._bgTickCount = tickCount
+        , Bb._bgBlockingActions = blockingActions
+        , Bb._bgLastBlocking = lastBlocking
+        }
+
     st =
      Bb.UIState
-        { Bb._uiTickCount = 0
+        { Bb._uiBgTask = bg
+        , Bb._uiTickCount = 0
         , Bb._uiWindow = uio ^. Bb.uioStartWindow
         , Bb._uiPopup = Nothing
-        , Bb._uiChan = chan
+        , Bb._uiChan = uiChan
         , Bb._uiOptions = uio
-        , Bb._uiBlockingActions = Map.empty
         , Bb._uiSt = ust
         , Bb._uiStatusMessage = Nothing
         , Bb._uiTime = localTime
@@ -66,17 +80,19 @@ runTui uio ust = do
         , Bb._uiErrorMessageHistory = []
         , Bb._uiInfoMessageHistory = []
         , Bb._uiPopText = BE.editorText Bb.NamePopTextEdit Nothing ""
+        , Bb._uiBlocked = True
         }
 
   void . forkIO $
     forever $ do
-      threadDelay 100000 -- 0.1 seconds
-      BCh.writeBChan chan Bb.EvtTick
+      threadDelay (60 * 1000000)  -- 1 min
+      BCh.writeBChan uiChan $ Bb.EvtUpdate
 
   let buildVty = V.mkVty V.defaultConfig
   initialVty <- buildVty
   st2 <- addBlockingAction st ((uio ^. Bb.uioAppInit) st)
-  void $ B.customMain initialVty buildVty (Just chan) (app uio) st2
+  void . forkIO $ runBackgroundTask bg st
+  void $ B.customMain initialVty buildVty (Just uiChan) (app uio) st2
 
 
 app :: Bb.UIOptions ust up uw un ue -> B.App (Bb.UIState ust up uw un ue) (Bb.Event ust up uw un ue) (Bb.Name un)
@@ -96,6 +112,36 @@ app uio =
     }
 
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Event handlers
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+runBackgroundTask :: Bb.BgTask ust up uw un ue -> Bb.UIState ust up uw un ue -> IO ()
+runBackgroundTask bg st = forever $ do
+  threadDelay $ 100000 -- 0.1 sec
+  atomically $ TV.modifyTVar' (bg ^. Bb.bgTickCount) (\t -> t + 1 `mod` 1000000)
+
+  --------------------------------
+  -- Has blocked status changed?
+  --------------------------------
+  (blockedChanged, isBlocked) <- atomically $ do
+    last <- TV.readTVar $ bg ^. Bb.bgLastBlocking
+    blocked <- not . null <$> TV.readTVar (bg ^. Bb.bgBlockingActions)
+
+    if last == blocked
+      then pure (False, blocked)
+      else do
+        TV.writeTVar (bg ^. Bb.bgLastBlocking) blocked
+        pure (True, blocked)
+
+  -- Update on change
+  -- or send when blocked so that the spinner can redraw
+  when (isBlocked || blockedChanged) $ do
+    BCh.writeBChan (st ^. Bb.uiChan) $ Bb.EvtUpdate
+  --------------------------------
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Event handlers
@@ -103,21 +149,23 @@ app uio =
 handleEvent :: Bb.UIState ust up uw un ue -> B.BrickEvent (Bb.Name un) (Bb.Event ust up uw un ue) -> B.EventM (Bb.Name un) (B.Next (Bb.UIState ust up uw un ue))
 handleEvent st ev =
   case ev of
-    (B.AppEvent Bb.EvtTick) -> do
-      let st2 = st & Bb.uiTickCount %~ (\c -> c + (1 :: Int) `mod` 1000000)
-
+    (B.AppEvent Bb.EvtUpdate) -> do
       -- Clear expired messages
       now <- liftIO DT.getCurrentTime
       let localTime = DT.utcToLocalTime (st ^. Bb.uiTimeZone) now
-      let st3 = case st2 ^. Bb.uiStatusMessage of
-                  Nothing -> st2
+      let st2 = case st ^. Bb.uiStatusMessage of
+                  Nothing -> st
                   Just (_, _, til) ->
                     if now > til
-                      then st2 & Bb.uiStatusMessage .~ Nothing
-                      else st2
+                      then st & Bb.uiStatusMessage .~ Nothing
+                      else st
 
-      B.continue $ st3 & Bb.uiTime .~ localTime
+      tickCount <- liftIO . TV.readTVarIO $ st2 ^. Bb.uiBgTask . Bb.bgTickCount
+      isBlocked <- liftIO $ not . null <$>  TV.readTVarIO (st2 ^. Bb.uiBgTask . Bb.bgBlockingActions)
 
+      B.continue $ st2 & Bb.uiTime .~ localTime
+                       & Bb.uiTickCount .~ tickCount
+                       & Bb.uiBlocked .~ isBlocked
 
     (B.AppEvent (Bb.EvtBlockingResp resp)) -> do
       st2 <- liftIO $ handleBlockingResponse resp st
@@ -183,7 +231,7 @@ drawUI st =
     windowType = st ^. Bb.uiWindow
     windowWidget = (st ^. Bb.uiOptions . Bb.uioDrawWindow) windowType st
   in
-  (if null (st ^. Bb.uiBlockingActions)
+  (if not (st ^. Bb.uiBlocked)
      then []
      else [(st ^. Bb.uiOptions . Bb.uioDrawSpinner) st]
   )
@@ -218,8 +266,9 @@ addAsyncAction st (Bb.PendingAction paId paName req) = do
 -- | Add an action that runs in the background but does not block the UI
 addBlockingAction :: Bb.UIState ust up uw un ue -> Bb.PendingAction ust up uw un ue -> IO (Bb.UIState ust up uw un ue)
 addBlockingAction st pa@(Bb.PendingAction paId paName _) = do
+  atomically $ TV.modifyTVar' (st ^. Bb.uiBgTask . Bb.bgBlockingActions) (\b -> b & at paId ?~ paName)
   runBlockingAction st pa
-  pure $ st & Bb.uiBlockingActions . at paId ?~ paName
+  pure st
 
 
 -- | Async version of addBlockingAction
@@ -245,11 +294,12 @@ runBlockingAction st (Bb.PendingAction id name req) = do
 
 
 handleBlockingResponse :: Bb.PendingResponse ust up uw un ue -> Bb.UIState ust up uw un ue -> IO (Bb.UIState ust up uw un ue)
-handleBlockingResponse (Bb.PendingResponse pId _ (rfn, ioActions)) st = do
-  -- Run the state update
-  let st1 = rfn $ st & Bb.uiBlockingActions . at pId .~ Nothing
+handleBlockingResponse (Bb.PendingResponse pId paName (rfn, ioActions)) st = do
+  -- Remove the bending action
+  atomically $ TV.modifyTVar' (st ^. Bb.uiBgTask . Bb.bgBlockingActions) (\b -> b & at pId .~ Nothing)
   -- Run the list of IO actions
-  foldM (\sta act -> act sta) st1 ioActions
+  let st2 = rfn st
+  foldM (\sta act -> act sta) st2 ioActions
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 

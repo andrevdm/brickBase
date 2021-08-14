@@ -127,7 +127,7 @@ demoBlockingRequest st = do
 
   Bb.addBlockingAction st . Bb.PendingAction id "demo.blocking" $ do
     Bb.sendStatusMessage st Bb.StsInfo "Blocking action demo starting" Nothing
-    for_ [0..3] $ \i -> do
+    for_ [0..5] $ \i -> do
       threadDelay (500000)
       Bb.sendStatusMessage st Bb.StsTrace ("Blocking: " <> show i) Nothing
 

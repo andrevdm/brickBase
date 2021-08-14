@@ -31,6 +31,7 @@ import qualified Brick.Widgets.Edit as BE
 import qualified Brick.Widgets.Center as BC
 import qualified Brick.Widgets.Dialog as BD
 import qualified Brick.Widgets.List as BL
+import qualified Control.Concurrent.STM.TVar as TV
 import           Control.Lens ((%~), (.~), (?~), (^.))
 import qualified Data.Text as Txt
 import qualified Data.Time as DT
@@ -134,8 +135,9 @@ nopKeyHandler st _ev = B.continue st
 
 defaultGlobalKeyHandler :: Bb.UIState ust up uw un ue -> B.BrickEvent (Bb.Name un) (Bb.Event ust up uw un ue) -> B.EventM (Bb.Name un) (B.Next (Bb.UIState ust up uw un ue))
 defaultGlobalKeyHandler st ev = do
+  bgTasks <- liftIO . TV.readTVarIO $ st ^. Bb.uiBgTask . Bb.bgBlockingActions
   let next =
-        case (null $ st ^. Bb.uiBlockingActions, st ^. Bb.uiPopup) of
+        case (null bgTasks, st ^. Bb.uiPopup) of
           -- No other key handlers run when there is a blocking action
           (False, _) -> \s _ -> B.continue s
           -- Popup next

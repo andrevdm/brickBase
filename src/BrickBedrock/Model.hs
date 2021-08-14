@@ -42,7 +42,6 @@ module BrickBedrock.Model
     , uiWindow
     , uiPopup
     , uiChan
-    , uiBlockingActions
     , uiSt
     , uiOptions
     , uiStatusMessage
@@ -52,6 +51,8 @@ module BrickBedrock.Model
     , uiInfoMessageHistory
     , uiPopText
     , uiWindowErrors
+    , uiBgTask
+    , uiBlocked
 
     , WindowReg (..)
     , wrDraw
@@ -68,6 +69,12 @@ module BrickBedrock.Model
     , uieFocus
     , uieDetail
 
+    , BgTask (..)
+    , bgUiChan
+    , bgTickCount
+    , bgBlockingActions
+    , bgLastBlocking
+
     , spinner
     ) where
 
@@ -78,6 +85,7 @@ import qualified Brick.BChan as BCh
 import qualified Brick.Focus as BF
 import qualified Brick.Widgets.Edit as BE
 import qualified Brick.Widgets.List as BL
+import qualified Control.Concurrent.STM.TVar as TV
 import           Control.Lens (makeLenses)
 import           Data.Time (UTCTime)
 import qualified Data.Time as DT
@@ -88,6 +96,13 @@ import qualified Graphics.Vty as V
 spinner :: [Text]
 spinner = ["⢀⠀", "⡀⠀", "⠄⠀", "⢂⠀", "⡂⠀", "⠅⠀", "⢃⠀", "⡃⠀", "⠍⠀", "⢋⠀", "⡋⠀", "⠍⠁", "⢋⠁", "⡋⠁", "⠍⠉", "⠋⠉", "⠋⠉", "⠉⠙", "⠉⠙", "⠉⠩", "⠈⢙", "⠈⡙", "⢈⠩", "⡀⢙", "⠄⡙", "⢂⠩", "⡂⢘", "⠅⡘", "⢃⠨", "⡃⢐", "⠍⡐", "⢋⠠", "⡋⢀", "⠍⡁", "⢋⠁", "⡋⠁", "⠍⠉", "⠋⠉", "⠋⠉", "⠉⠙", "⠉⠙", "⠉⠩", "⠈⢙", "⠈⡙", "⠈⠩", "⠀⢙", "⠀⡙", "⠀⠩", "⠀⢘", "⠀⡘", "⠀⠨", "⠀⢐", "⠀⡐", "⠀⠠", "⠀⢀", "⠀⡀"]
 
+data BgTask ust up uw un ue = BgTask
+  { _bgUiChan :: !(BCh.BChan (Event ust up uw un ue))
+  , _bgTickCount :: !(TV.TVar Int)
+  , _bgBlockingActions :: !(TV.TVar (Map UU.UUID Text))
+  , _bgLastBlocking :: !(TV.TVar Bool)
+  }
+
 data StatusLevel
   = StsError
   | StsInfo
@@ -95,7 +110,7 @@ data StatusLevel
   | StsErrorNotify
 
 data Event ust up uw un ue
-  = EvtTick
+  = EvtUpdate
   | EvtAddBlockingAction (PendingAction ust up uw un ue)
   | EvtBlockingResp (PendingResponse ust up uw un ue)
   | EvtSetStatusMessage StatusLevel Text (Maybe Text) (Maybe Int)
@@ -191,12 +206,10 @@ data UIErrors un = UIErrors
 
 
 data UIState ust up uw un ue = UIState
-  { _uiTickCount :: !Int
-  , _uiWindow :: !(Window ust up uw un ue)
+  { _uiWindow :: !(Window ust up uw un ue)
   , _uiPopup :: !(Maybe (Popup  ust up uw un ue))
   , _uiOptions :: !(UIOptions ust up uw un ue)
   , _uiChan :: !(BCh.BChan (Event ust up uw un ue))
-  , _uiBlockingActions :: !(Map UU.UUID Text)
   , _uiSt :: !ust
   , _uiStatusMessage :: !(Maybe (StatusLevel, Text, UTCTime))
   , _uiTime :: !DT.LocalTime
@@ -205,6 +218,9 @@ data UIState ust up uw un ue = UIState
   , _uiErrorMessageHistory :: ![(UU.UUID, UTCTime, Text, Maybe Text)]
   , _uiInfoMessageHistory :: ![(UU.UUID, UTCTime, Text, Maybe Text)]
   , _uiPopText :: !(BE.Editor Text (Name un))
+  , _uiBgTask :: !(BgTask ust up uw un ue)
+  , _uiTickCount :: !Int
+  , _uiBlocked :: !Bool
   }
 
 makeLenses ''UIState
@@ -212,3 +228,4 @@ makeLenses ''UIOptions
 makeLenses ''UIErrors
 makeLenses ''WindowReg
 makeLenses ''PopupReg
+makeLenses ''BgTask
