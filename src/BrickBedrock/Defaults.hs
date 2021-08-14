@@ -154,7 +154,10 @@ defaultGlobalKeyHandler st ev = do
     _ -> next st ev
 
 
-defaultWindowKeyHandler :: Bb.UIState ust up uw un ue -> B.BrickEvent (Bb.Name un) (Bb.Event ust up uw un ue) -> B.EventM (Bb.Name un) (B.Next (Bb.UIState ust up uw un ue))
+defaultWindowKeyHandler
+  :: Bb.UIState ust up uw un ue
+  -> B.BrickEvent (Bb.Name un) (Bb.Event ust up uw un ue)
+  -> B.EventM (Bb.Name un) (B.Next (Bb.UIState ust up uw un ue))
 defaultWindowKeyHandler st ev =
   case ev of
     (B.VtyEvent (V.EvKey k ms)) ->
@@ -191,7 +194,11 @@ defaultWindowKeyHandler st ev =
     _ -> B.continue st
 
 
-defaultPopupKeyHandler :: Bb.Popup ust up uw un ue -> Bb.UIState ust up uw un ue -> B.BrickEvent (Bb.Name un) (Bb.Event ust up uw un ue) -> B.EventM (Bb.Name un) (B.Next (Bb.UIState ust up uw un ue))
+defaultPopupKeyHandler
+  :: Bb.Popup ust up uw un ue
+  -> Bb.UIState ust up uw un ue
+  -> B.BrickEvent (Bb.Name un) (Bb.Event ust up uw un ue)
+  -> B.EventM (Bb.Name un) (B.Next (Bb.UIState ust up uw un ue))
 defaultPopupKeyHandler pop st ev =
   case ev of
     (B.VtyEvent (V.EvKey k ms)) ->

@@ -106,9 +106,9 @@ windowKeyHandler st ev =
           st2 <- liftIO $ demoAsyncRequest st
           B.continue st2
 
-        _ -> Bbd.defaultWindowKeyHandler st ev
+        _ -> B.continue st
 
-    _ -> Bbd.defaultWindowKeyHandler st ev
+    _ -> B.continue st
 
 
 drawPopup :: UIState' -> B.Widget Name'
