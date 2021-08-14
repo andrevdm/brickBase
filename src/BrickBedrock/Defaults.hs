@@ -118,7 +118,7 @@ defaultAttrs =
     , ("status_Running", B.fg V.brightGreen)
     , ("popup", V.green `B.on` V.black)
     , ("spinner", V.white `B.on` V.black)
-    , ("spinnerText", B.fg V.brightGreen)
+    , ("spinnerText", B.fg V.brightMagenta)
     , ("msgInfo", B.fg V.brightCyan)
     , ("msgError", B.fg V.brightRed)
     , ("windowTitle", V.brightWhite `B.on` V.magenta)
