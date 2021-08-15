@@ -25,6 +25,7 @@ module BrickBedrock.Model
     , uioDrawWindowContainer
     , uioStartWindow
     , uioAppInit
+    , uioAppPreInit
     , uioDefaultMessageTimeoutSecs
     , uioAppName
     , uioAppVersion
@@ -173,6 +174,8 @@ data UIOptions ust up uw un ue = UIOptions
   , _uioErrorsWindowReg :: !(WindowReg ust up uw un ue)
     -- | First window to show
   , _uioStartWindow :: !(Window ust up uw un ue)
+    -- | IO action run before the app starts
+  , _uioAppPreInit :: !(UIState ust up uw un ue -> IO (UIState ust up uw un ue))
     -- | Initialisation code, runs in background thread at startup
   , _uioAppInit :: !(UIState ust up uw un ue -> PendingAction ust up uw un ue)
     -- | How long to display status messages for

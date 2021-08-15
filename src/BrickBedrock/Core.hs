@@ -90,9 +90,10 @@ runTui uio ust = do
 
   let buildVty = V.mkVty V.defaultConfig
   initialVty <- buildVty
-  st2 <- addBlockingAction st ((uio ^. Bb.uioAppInit) st)
+  st2 <- (uio ^. Bb.uioAppPreInit) st
+  st3 <- addBlockingAction st ((uio ^. Bb.uioAppInit) st2)
   void . forkIO $ runBackgroundTask bg st
-  void $ B.customMain initialVty buildVty (Just uiChan) (app uio) st2
+  void $ B.customMain initialVty buildVty (Just uiChan) (app uio) st3
 
 
 app :: Bb.UIOptions ust up uw un ue -> B.App (Bb.UIState ust up uw un ue) (Bb.Event ust up uw un ue) (Bb.Name un)

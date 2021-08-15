@@ -61,6 +61,7 @@ defaultInit =
     , Bb._uioDrawStatusBar = defaultDrawStatusBar
     , Bb._uioStartWindow = Bb.WUnknown
     , Bb._uioAppInit = defaultAppInit
+    , Bb._uioAppPreInit = pure . identity
     , Bb._uioDefaultMessageTimeoutSecs = 360
     , Bb._uioAppName = "Brick Bedrock"
     , Bb._uioAppVersion = Txt.pack $ Ver.showVersion Paths.version
