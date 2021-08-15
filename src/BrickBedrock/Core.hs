@@ -213,9 +213,8 @@ handleEvent st ev =
       st2 <- liftIO $ addBlockingAction st act
       B.continue st2
 
-    (B.AppEvent (Bb.EvtUser ue)) -> do
-      st2 <- liftIO $ (st ^. Bb.uiOptions . Bb.uioHandleUserEvents) ue st
-      B.continue st2
+    (B.AppEvent (Bb.EvtUser ue)) ->
+      (st ^. Bb.uiOptions . Bb.uioHandleUserEvents) ue st
 
     _ ->
       (st ^. Bb.uiOptions . Bb.uioGlobalKeyHandler) st ev

@@ -189,7 +189,7 @@ data UIOptions ust up uw un ue = UIOptions
     -- | Called when an error message was sent. Can be used for logging etc
   , _uioOnError :: !(Text -> Maybe Text -> UIState ust up uw un ue -> IO (UIState ust up uw un ue))
     -- | Handler for user events
-  , _uioHandleUserEvents :: !(ue -> UIState ust up uw un ue -> IO (UIState ust up uw un ue))
+  , _uioHandleUserEvents :: !(ue -> UIState ust up uw un ue -> B.EventM (Name un) (B.Next (UIState ust up uw un ue)))
     -- | User defined attributes, overrides the default ones
   , _uioUserAttrs :: ![(BA.AttrName, V.Attr)]
     -- | What to display for help

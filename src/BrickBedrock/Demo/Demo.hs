@@ -87,10 +87,10 @@ regPopDemo =
       }
 
 
-handleEvent :: DemoEvent -> UIState' -> IO UIState'
+handleEvent :: DemoEvent -> UIState' -> B.EventM Name' (B.Next UIState')
 handleEvent ev st =
   case ev of
-    ETodo -> pure st
+    ETodo -> B.continue st
 
 
 windowKeyHandler :: UIState' -> B.BrickEvent Name' Event' -> B.EventM Name' (B.Next UIState')
