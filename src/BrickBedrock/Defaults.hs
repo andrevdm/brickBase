@@ -353,14 +353,14 @@ defaultEventHandlerErrorsWindow st ev =
       case BF.focusGetCurrent (sx ^. Bb.uiWindowErrors . Bb.uieFocus) of
         Just Bb.NameErrorMsgList -> do
           let detail =
-               case snd <$> BL.listSelectedElement (st ^. Bb.uiWindowErrors . Bb.uieErrors) of
+               case snd <$> BL.listSelectedElement (sx ^. Bb.uiWindowErrors . Bb.uieErrors) of
                  Just (_, _, _, Just d) -> d
                  _ -> ""
           sx & Bb.uiWindowErrors . Bb.uieDetail .~ BE.editorText Bb.NameErrorMsgDetail Nothing detail
 
         Just Bb.NameInfoMsgList -> do
           let detail =
-               case snd <$> BL.listSelectedElement (st ^. Bb.uiWindowErrors . Bb.uieInfos) of
+               case snd <$> BL.listSelectedElement (sx ^. Bb.uiWindowErrors . Bb.uieInfos) of
                  Just (_, _, _, Just d) -> d
                  _ -> ""
           sx & Bb.uiWindowErrors . Bb.uieDetail .~ BE.editorText Bb.NameErrorMsgDetail Nothing detail
