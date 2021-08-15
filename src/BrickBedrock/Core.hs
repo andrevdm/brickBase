@@ -91,9 +91,9 @@ runTui uio ust = do
   let buildVty = V.mkVty V.defaultConfig
   initialVty <- buildVty
   st2 <- (uio ^. Bb.uioAppPreInit) st
-  st3 <- addBlockingAction st ((uio ^. Bb.uioAppInit) st2)
+  addBlockingAction st ((uio ^. Bb.uioAppInit) st2)
   void . forkIO $ runBackgroundTask bg st
-  void $ B.customMain initialVty buildVty (Just uiChan) (app uio) st3
+  void $ B.customMain initialVty buildVty (Just uiChan) (app uio) st2
 
 
 app :: Bb.UIOptions ust up uw un ue -> B.App (Bb.UIState ust up uw un ue) (Bb.Event ust up uw un ue) (Bb.Name un)
@@ -210,8 +210,8 @@ handleEvent st ev =
       B.continue st5
 
     (B.AppEvent (Bb.EvtAddBlockingAction act)) -> do
-      st2 <- liftIO $ addBlockingAction st act
-      B.continue st2
+      liftIO $ addBlockingAction st act
+      B.continue st
 
     (B.AppEvent (Bb.EvtUser ue)) ->
       (st ^. Bb.uiOptions . Bb.uioHandleUserEvents) ue st
@@ -263,11 +263,10 @@ addAsyncAction st (Bb.PendingAction paId paName req) = do
 
 
 -- | Add an action that runs in the background but does not block the UI
-addBlockingAction :: Bb.UIState ust up uw un ue -> Bb.PendingAction ust up uw un ue -> IO (Bb.UIState ust up uw un ue)
+addBlockingAction :: Bb.UIState ust up uw un ue -> Bb.PendingAction ust up uw un ue -> IO ()
 addBlockingAction st pa@(Bb.PendingAction paId paName _) = do
   atomically $ TV.modifyTVar' (st ^. Bb.uiBgTask . Bb.bgBlockingActions) (\b -> b & at paId ?~ paName)
   runBlockingAction st pa
-  pure st
 
 
 -- | Async version of addBlockingAction

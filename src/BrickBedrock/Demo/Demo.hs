@@ -132,7 +132,8 @@ demoBlockingRequest st = do
       Bb.sendStatusMessage st Bb.StsTrace ("Blocking: " <> show i) Nothing
 
     throwString "bang"
-    --pure (\stx -> stx, []) --TODO demo do something to state here, e.g. send message
+
+  pure st
 
 
 demoAsyncRequest :: UIState' -> IO UIState'
@@ -146,6 +147,5 @@ demoAsyncRequest st = do
       Bb.sendStatusMessage st Bb.StsTrace ("Async: " <> show i) Nothing
 
     throwString "ouch"
-    --pure (\stx -> stx, []) --TODO demo do something to state here, e.g. send message
 
   pure st
