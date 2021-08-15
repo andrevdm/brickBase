@@ -146,8 +146,8 @@ data PopupReg ust up uw un ue = PopupReg
   , _prEventHandler :: !(Popup ust up uw un ue -> UIState ust up uw un ue -> B.BrickEvent (Name un) (Event ust up uw un ue) -> B.EventM (Name un) (B.Next (UIState ust up uw un ue)))
   }
 
-data PendingAction ust up uw un ue = PendingAction UU.UUID Text (IO (UIState ust up uw un ue -> UIState ust up uw un ue, [UIState ust up uw un ue -> IO (UIState ust up uw un ue)]))
-data PendingResponse ust up uw un ue = PendingResponse UU.UUID Text (UIState ust up uw un ue -> UIState ust up uw un ue, [UIState ust up uw un ue -> IO (UIState ust up uw un ue)])
+data PendingAction ust up uw un ue = PendingAction UU.UUID Text (IO (UIState ust up uw un ue -> B.EventM (Name un) (B.Next (UIState ust up uw un ue))))
+data PendingResponse ust up uw un ue = PendingResponse UU.UUID Text (UIState ust up uw un ue -> B.EventM (Name un) (B.Next (UIState ust up uw un ue)))
 
 data UIOptions ust up uw un ue = UIOptions
   { -- | Key handler that is always run first, even when the UI is blocked (spinner showing)

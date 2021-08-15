@@ -167,9 +167,8 @@ handleEvent st ev =
                        & Bb.uiTickCount .~ tickCount
                        & Bb.uiBlocked .~ isBlocked
 
-    (B.AppEvent (Bb.EvtBlockingResp resp)) -> do
-      st2 <- liftIO $ handleBlockingResponse resp st
-      B.continue st2
+    (B.AppEvent (Bb.EvtBlockingResp resp)) ->
+      handleBlockingResponse resp st
 
 
     (B.AppEvent (Bb.EvtSetStatusMessage lvl msg detail ttl)) -> do
@@ -289,17 +288,19 @@ runBlockingAction st (Bb.PendingAction id name req) = do
         -- Show the error
         sendErrorNotify st ("Exception in blocking action: " <> name) (Just . show $ e)
         -- Clear the blocking action
-        BCh.writeBChan (st ^. Bb.uiChan) $ Bb.EvtBlockingResp (Bb.PendingResponse id name (identity, []))
+        BCh.writeBChan (st ^. Bb.uiChan) $ Bb.EvtBlockingResp (Bb.PendingResponse id name B.continue)
       )
 
 
-handleBlockingResponse :: Bb.PendingResponse ust up uw un ue -> Bb.UIState ust up uw un ue -> IO (Bb.UIState ust up uw un ue)
-handleBlockingResponse (Bb.PendingResponse pId paName (rfn, ioActions)) st = do
-  -- Remove the bending action
-  atomically $ TV.modifyTVar' (st ^. Bb.uiBgTask . Bb.bgBlockingActions) (\b -> b & at pId .~ Nothing)
-  -- Run the list of IO actions
-  let st2 = rfn st
-  foldM (\sta act -> act sta) st2 ioActions
+handleBlockingResponse :: Bb.PendingResponse ust up uw un ue -> Bb.UIState ust up uw un ue -> B.EventM (Bb.Name un) (B.Next (Bb.UIState ust up uw un ue))
+handleBlockingResponse (Bb.PendingResponse pId _paName rfn) st = do
+  -- Remove the pending action
+  liftIO . atomically $ TV.modifyTVar' (st ^. Bb.uiBgTask . Bb.bgBlockingActions) (\b -> b & at pId .~ Nothing)
+  -- Run the actions
+  rfn st
+
+
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
