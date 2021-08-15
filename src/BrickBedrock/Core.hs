@@ -74,7 +74,7 @@ runTui uio ust = do
         , Bb._uiWindowErrors = Bb.UIErrors
           { Bb._uieErrors = BL.list Bb.NameErrorMsgList Vec.empty 1
           , Bb._uieInfos = BL.list Bb.NameInfoMsgList Vec.empty 1
-          , Bb._uieFocus = BF.focusRing [Bb.NameErrorMsgList, Bb.NameInfoMsgList, Bb.NameErrorMsgDetail]
+          , Bb._uieFocus = BF.focusRing [Bb.NameInfoMsgList, Bb.NameErrorMsgList, Bb.NameErrorMsgDetail]
           , Bb._uieDetail = BE.editorText Bb.NameErrorMsgDetail Nothing ""
           }
         , Bb._uiErrorMessageHistory = []

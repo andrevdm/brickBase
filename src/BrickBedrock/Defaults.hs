@@ -371,11 +371,11 @@ defaultEventHandlerErrorsWindow st ev =
 defaultDrawErrorsWindow :: (Ord un, Show un) => Bb.UIState ust up uw un ue -> B.Widget (Bb.Name un)
 defaultDrawErrorsWindow st =
   B.vBox
-    [ B.withAttr "infoTitle" $ B.txt "Error Messages"
-    , BL.renderList (\_ m -> B.vLimit 1 $ drawLogMsg m) (BF.focusGetCurrent (st ^. Bb.uiWindowErrors . Bb.uieFocus) == Just Bb.NameErrorMsgList) (st ^. Bb.uiWindowErrors . Bb.uieErrors)
-    , B.padTop (B.Pad 1) . B.vLimit 20 $ B.withAttr "infoTitle" $ B.txt "Info Messages"
+    [ B.padTop (B.Pad 1) . B.vLimit 15 $ B.withAttr "infoTitle" $ B.txt "Info Messages"
     , BL.renderList (\_ m -> B.vLimit 1 $ drawLogMsg m) (BF.focusGetCurrent (st ^. Bb.uiWindowErrors . Bb.uieFocus) == Just Bb.NameInfoMsgList) (st ^. Bb.uiWindowErrors . Bb.uieInfos)
-    , B.padTop (B.Pad 1) . B.vLimit 20 $ B.withAttr "infoTitle" $ B.txt "Detail"
+    , B.withAttr "infoTitle" $ B.txt "Error Messages"
+    , BL.renderList (\_ m -> B.vLimit 1 $ drawLogMsg m) (BF.focusGetCurrent (st ^. Bb.uiWindowErrors . Bb.uieFocus) == Just Bb.NameErrorMsgList) (st ^. Bb.uiWindowErrors . Bb.uieErrors)
+    , B.padTop (B.Pad 1) . B.vLimit 15 $ B.withAttr "infoTitle" $ B.txt "Detail"
     , B.vLimit 20 $ BE.renderEditor (B.txt . Txt.unlines) True (st ^. Bb.uiWindowErrors . Bb.uieDetail)
     ]
   where
