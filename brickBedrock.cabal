@@ -60,6 +60,7 @@ library
 executable brickBedrock-exe
   import:              common-options
   import:              common-ghc-options
+  ghc-options:         -threaded
   hs-source-dirs:      app
   main-is:             Main.hs
   other-modules:       Paths_brickBedrock
@@ -83,6 +84,7 @@ executable brickBedrock-exe
 test-suite brickBedrock-test
   import:              common-options
   import:              common-ghc-options
+  ghc-options:         -threaded
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Tests.hs
