@@ -13,9 +13,20 @@ category:            Web
 build-type:          Simple
 extra-source-files:  README.md
 
-library
-  ghc-options:         -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wimplicit-prelude -Wcompat -Wredundant-constraints -Wnoncanonical-monad-instances -Widentities -fhide-source-paths -Wpartial-fields -fhide-source-paths -freverse-errors -fwrite-ide-info
 
+common common-options
+  build-depends:
+    base >=4.10.1.0 && <5
+  default-language:
+    Haskell2010
+
+common common-ghc-options
+  ghc-options: -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wimplicit-prelude -Wcompat -Wredundant-constraints -Wnoncanonical-monad-instances -Widentities -fhide-source-paths -Wpartial-fields -fhide-source-paths -freverse-errors -fwrite-ide-info -hiedir=.hie
+
+
+library
+  import:              common-options
+  import:              common-ghc-options
   hs-source-dirs:      src
   exposed-modules:     BrickBedrock.Core
                      , BrickBedrock.Defaults
@@ -26,8 +37,7 @@ library
                      , BrickBedrock.Controls.ReadOnlyEdit
                      , BrickBedrock.Controls.ListGrid
   other-modules:       Paths_brickBedrock
-  build-depends:       base >= 4.10.1.0 && < 5
-                     , protolude
+  build-depends:       protolude
                      , aeson
                      , brick
                      , bytestring
@@ -48,9 +58,10 @@ library
   default-language:    Haskell2010
 
 executable brickBedrock-exe
+  import:              common-options
+  import:              common-ghc-options
   hs-source-dirs:      app
   main-is:             Main.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wimplicit-prelude -Wcompat -Wredundant-constraints -Wnoncanonical-monad-instances -Widentities -fhide-source-paths -Wpartial-fields -fhide-source-paths -freverse-errors -fwrite-ide-info
   other-modules:       Paths_brickBedrock
   build-depends:       base
                      , brickBedrock
@@ -68,21 +79,19 @@ executable brickBedrock-exe
                      , uuid
                      , vector
                      , vty
-  default-language:    Haskell2010
 
 test-suite brickBedrock-test
+  import:              common-options
+  import:              common-ghc-options
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Tests.hs
-  build-depends:       base
-                     , brickBedrock
+  build-depends:       brickBedrock
                      , protolude
                      , text
                      , containers
                      , hedgehog
   other-modules:       DemoTests
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wimplicit-prelude -Wcompat -Wredundant-constraints -Wnoncanonical-monad-instances -Widentities -fhide-source-paths -Wpartial-fields -fhide-source-paths -freverse-errors -fwrite-ide-info
-  default-language:    Haskell2010
 
 source-repository head
   type:     git
