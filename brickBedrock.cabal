@@ -81,20 +81,6 @@ executable brickBedrock-exe
                      , vector
                      , vty
 
-test-suite brickBedrock-test
-  import:              common-options
-  import:              common-ghc-options
-  ghc-options:         -threaded
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-  main-is:             Tests.hs
-  build-depends:       brickBedrock
-                     , protolude
-                     , text
-                     , containers
-                     , hedgehog
-  other-modules:       DemoTests
-
 source-repository head
   type:     git
   location: https://github.com/andrevdm/brickBedrock
