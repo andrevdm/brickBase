@@ -5,13 +5,6 @@
 
 packages:
 - completed:
-    hackage: text-zipper-0.11@sha256:8b198643c638d8c29a9b34d0b350387da7b6ef89c6e578aaaabe4170eb426310,1469
-    pantry-tree:
-      size: 600
-      sha256: 56dd37ebfd21227c4fc77d1b60708b14522fb43d20280c7d04f4418a9b1fface
-  original:
-    hackage: text-zipper-0.11@sha256:8b198643c638d8c29a9b34d0b350387da7b6ef89c6e578aaaabe4170eb426310,1469
-- completed:
     hackage: strip-ansi-escape-0.1.0.0@sha256:08f2ed93b16086a837ec46eab7ce8d27cf39d47783caaeb818878ea33c2ff75f,1628
     pantry-tree:
       size: 671
@@ -20,7 +13,7 @@ packages:
     hackage: strip-ansi-escape-0.1.0.0@sha256:08f2ed93b16086a837ec46eab7ce8d27cf39d47783caaeb818878ea33c2ff75f,1628
 snapshots:
 - completed:
-    size: 532414
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/16/22.yaml
-    sha256: e483fb88549fc0f454c190979bf35ac91c7aceff2c0e71e7d8edd11842d772d8
-  original: lts-16.22
+    size: 586041
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/12.yaml
+    sha256: 80fc6391195ff00c36f2a605ecbb07de909bfaa2eaa9722a27e486a6ecf8ecb0
+  original: lts-18.12
