@@ -1,4 +1,5 @@
 package = brickBedrock
+exe = brickBedrock-exe
 stack_yaml = STACK_YAML="stack.yaml"
 stack = $(stack_yaml) stack
 
@@ -54,4 +55,17 @@ dev-deps:
 	stack install ghcid
 
 
-.PHONY : build build-dirty run install ghci ghcid dev-deps lint check-nightly setup
+cabal-run:
+	cabal run $(exe)
+
+cabal-build:
+	cabal build $(package) --ghc-options "-j6 +RTS -A128m -n2m -qg -RTS"
+
+cabal-build-fast:
+	cabal build $(package) --ghc-options "-O0 -j6 +RTS -A128m -n2m -qg -RTS"
+
+cabal-ghcid:
+	ghcid --lint -c "cabal repl --repl-options='-ignore-dot-ghci' --repl-options='-fobject-code' --repl-options='-fno-warn-unused-do-bind' --repl-options='-j6' "
+
+
+.PHONY : build build-dirty run install ghci ghcid dev-deps lint check-nightly setup cabal-run cabal-build cabal-build-fast cabal-ghcid
