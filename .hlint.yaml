@@ -38,8 +38,8 @@
 - error: {lhs: atomicModifyIORef x, rhs: atomicModifyIORef' x}
 - ignore: {name: Use String}
 - error: {lhs: sum x, rhs: foldl' (+) 0 x}
-ignore: {name: Redundant do}
-ignore: {name: Use list comprehension}
+- ignore: {name: Redundant do}
+- ignore: {name: Use list comprehension}
 
 #- ignore: {name: Eta reduce}
 
