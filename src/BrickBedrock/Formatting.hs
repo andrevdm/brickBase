@@ -3,6 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TypeApplications #-}
 
 module BrickBedrock.Formatting
     ( showValue
@@ -33,7 +34,7 @@ showValue = \case
   Ae.Bool b -> show b
   Ae.Null -> "<null>"
   Ae.Object o -> show $ Hm.toList o <&> \(k,v) -> (k, showValue v)
-  Ae.Number n -> case Sci.floatingOrInteger n of
+  Ae.Number n -> case Sci.floatingOrInteger @Double @Integer n of
                    Right i -> show i
                    Left f -> Txt.pack $ printf "%0.2f" (f::Double)
 
