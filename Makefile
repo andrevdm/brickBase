@@ -58,6 +58,9 @@ dev-deps:
 cabal-run:
 	cabal run $(exe)
 
+cabal-run-fast:
+	cabal run $(exe) --ghc-options "-O0 -j6 +RTS -A128m -n2m -qg -RTS"
+
 cabal-build:
 	cabal build $(package) --ghc-options "-j6 +RTS -A128m -n2m -qg -RTS"
 
