@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-18.12
+resolver: lts-19.5
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -29,16 +29,16 @@ resolver: lts-18.12
 #   - auto-update
 #   - wai
 packages:
-- .
+  - .
 # Dependency packages to be pulled from upstream that are not in the resolver.
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:
 #
 extra-deps:
+  - github: protolude/protolude
+    commit: 3e249724fd0ead27370c8c297b1ecd38f92cbd5b
+
   - strip-ansi-escape-0.1.0.0@sha256:08f2ed93b16086a837ec46eab7ce8d27cf39d47783caaeb818878ea33c2ff75f,1628
-
-# extra-deps: []
-
 # Override default flag values for local packages and extra-deps
 # flags: {}
 

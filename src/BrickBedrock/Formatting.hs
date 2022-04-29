@@ -16,7 +16,7 @@ module BrickBedrock.Formatting
 
 import           Protolude
 import qualified Data.Aeson as Ae
-import qualified Data.HashMap.Strict as Hm
+import qualified Data.Aeson.KeyMap as Km
 import qualified Data.Scientific as Sci
 import qualified Data.String.AnsiEscapeCodes.Strip.Text as Stp
 import qualified Data.Text as Txt
@@ -33,7 +33,7 @@ showValue = \case
   Ae.String s -> s
   Ae.Bool b -> show b
   Ae.Null -> "<null>"
-  Ae.Object o -> show $ Hm.toList o <&> \(k,v) -> (k, showValue v)
+  Ae.Object o -> show $ Km.toList o <&> \(k,v) -> (k, showValue v)
   Ae.Number n -> case Sci.floatingOrInteger @Double @Integer n of
                    Right i -> show i
                    Left f -> Txt.pack $ printf "%0.2f" (f::Double)
@@ -54,7 +54,7 @@ stripJSONAnsi = \case
   Ae.Bool b -> Ae.Bool b
   Ae.Null -> Ae.Null
   Ae.Number n -> Ae.Number n
-  Ae.Object o -> Ae.Object $ Hm.map stripJSONAnsi o
+  Ae.Object o -> Ae.Object $ Km.map stripJSONAnsi o
 
 
 tryFormatByteString :: Text -> Text
